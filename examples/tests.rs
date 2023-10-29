@@ -1,7 +1,7 @@
 /*
  * @Author: plucky
  * @Date: 2022-10-21 17:23:16
- * @LastEditTime: 2023-10-29 16:15:54
+ * @LastEditTime: 2023-10-29 16:36:18
  * @Description: 
  */
 fn main() {
@@ -16,7 +16,7 @@ mod tests{
     // #[derive(sqlx::FromRow)]
     #[derive(Debug, Crud, FromRow)]
     #[anorm(rename = "users")] // rename table name
-    struct Usera {
+    struct User {
         // anorm(id) // default first field is primary key
         #[anorm(seq)] // sequence field, insert will ignore this field
         pub id: u64,
@@ -32,7 +32,7 @@ mod tests{
         // pub age: i32,
     }
 
-    impl Usera {
+    impl User {
         pub fn new(id: u64, name: impl Into<String>, password: impl Into<String>) -> Self { 
             Self { id, name:name.into(), password: password.into(), addr: None } 
         }
@@ -52,13 +52,13 @@ mod tests{
     async fn test_query() {
         let pool=get_pool().await.unwrap();
         
-        let u = Usera::get(&pool, 1).await;
+        let u = User::get(&pool, 1).await;
         println!("get {:?}", u);
-        let u = Usera::get_by(&pool, "where id=1").await;
+        let u = User::get_by(&pool, "where id=1").await;
         println!("get_by {:?}", u);
-        let u = Usera::query_by_name(&pool, "plucky".into()).await;
+        let u = User::query_by_name(&pool, "plucky".into()).await;
         println!("query_by_name {:?}", u);
-        let u =Usera::query(&pool).await;
+        let u =User::query(&pool).await;
         println!("list {:?}",u);
     }
 
@@ -66,7 +66,7 @@ mod tests{
     async fn test_update(){
         let pool=get_pool().await.unwrap();
 
-        let _u = Usera::new(2, "jack", "123456");
+        let _u = User::new(2, "jack", "123456");
         
         let r = _u.update(&pool).await.unwrap();
         dbg!(r);
@@ -80,7 +80,7 @@ mod tests{
     #[tokio::test]
     async fn test_insert() {
         let pool=get_pool().await.unwrap();
-        let _u = Usera::new(0, "lusy", "123456");
+        let _u = User::new(0, "lusy", "123456");
         let r =_u.insert(&pool).await.unwrap();
         println!("list: {:?}",r);
     }
@@ -89,20 +89,20 @@ mod tests{
     async fn test_delete() {
         let pool=get_pool().await.unwrap();
         
-        let _u = Usera::new(10, "lusy", "123456");
+        let _u = User::new(10, "lusy", "123456");
         let r = _u.delete(&pool).await.unwrap();
         println!("delete: {:?}",r);
-        let r =Usera::delete_by(&pool, "where name='leo'").await.unwrap();
+        let r =User::delete_by(&pool, "where name='leo'").await.unwrap();
         println!("delete: {:?}",r);
-        let r =Usera::delete_by_name(&pool, "lusy".into()).await.unwrap();
+        let r =User::delete_by_name(&pool, "lusy".into()).await.unwrap();
         println!("delete: {:?}",r);
     }
 
     #[tokio::test]
     async fn test_insert_all() {
         let pool=get_pool().await.unwrap();
-        let list = vec![Usera::new(0, "lusy3", "123456"),Usera::new(0, "lusy5", "123456")];
-        let r =Usera::insert_all(&pool, list).await.unwrap();
+        let list = vec![User::new(0, "lusy3", "123456"),User::new(0, "lusy5", "123456")];
+        let r =User::insert_all(&pool, list).await.unwrap();
         println!("list: {:?}",r);
 
     }

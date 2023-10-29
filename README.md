@@ -63,10 +63,15 @@ pub async fn get_pool() -> Result<MySqlPool> {
 #[tokio::test]
 async fn test_query() {
     let pool=get_pool().await.unwrap();
-    let u = User::get(&pool, 1).await.unwrap();
+        
+    let u = User::get(&pool, 1).await;
     println!("get {:?}", u);
-    let u = User::get_by(&pool, "where id=1").await.unwrap();
-    println!("get {:?}", u);
+    let u = User::get_by(&pool, "where id=1").await;
+    println!("get_by {:?}", u);
+    let u = User::query_by_name(&pool, "plucky".into()).await;
+    println!("query_by_name {:?}", u);
+    let u =User::query(&pool).await;
+    println!("list {:?}",u);
     
 }
 
