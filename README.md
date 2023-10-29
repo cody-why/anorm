@@ -101,7 +101,7 @@ ignore field.
 generate method update_xxx. 
 
 `#[anorm(by)]`
-generate query_by_field,update_by_field,delete_by_field.
+generate qet_by_field, query_by_field, update_by_field, delete_by_field.
 ```
 ### #[derive(FromRow)]
 ```
