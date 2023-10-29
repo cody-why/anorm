@@ -1,7 +1,7 @@
 /*
  * @Author: plucky
  * @Date: 2022-09-04 00:01:24
- * @LastEditTime: 2023-10-29 15:57:34
+ * @LastEditTime: 2023-10-29 21:30:13
  * @Description: 
  */
 
@@ -74,7 +74,7 @@ pub fn sql_derive_crud(input: TokenStream) -> TokenStream{
 /// 
 /// or use `#[derive(sqlx::FromRow)]` macro or impl `sqlx::FromRow` trait.
 /// 
-/// if using sqlx::FromRow, change `#[anorm(skip)]` to `#[sqlx(skip)]` .
+/// if using sqlx::FromRow, if have `#[anorm(skip)]` add `#[sqlx(skip)]` .
 /// 
 #[proc_macro_derive(FromRow)]
 pub fn sql_derive_form_row(input: TokenStream) -> TokenStream{

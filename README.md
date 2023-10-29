@@ -110,7 +110,7 @@ impl sqlx::FromRow trait.
 
 or use `#[derive(sqlx::FromRow)]` macro or impl `sqlx::FromRow` trait.
 
-if using sqlx::FromRow, change `#[anorm(skip)]` to `#[sqlx(skip)]` .
+if using sqlx::FromRow, if have `#[anorm(skip)]` add `#[sqlx(skip)]` .
 
 ```
 
