@@ -1,7 +1,7 @@
 /*
  * @Author: plucky
  * @Date: 2022-10-19 17:45:59
- * @LastEditTime: 2023-10-29 16:53:56
+ * @LastEditTime: 2023-10-31 03:31:32
  * @Description: 
  */
 
@@ -57,7 +57,7 @@ pub fn generate_update_field(fields: &Vec<&Field>, table_name:&str, id_column: &
 
 
 /// query_by_field,update_by_field,delete_by_field
-pub fn generate_crud_by_field(fields: &Vec<&Field>, table_name:&str, update_fields_str:&str,len:usize) -> TokenStream {
+pub fn generate_crud_by_field(fields: &Vec<&Field>, table_name:&str, update_fields_str:&str,columns_all:&str,len:usize) -> TokenStream {
     let generate_tokens = fields.iter()
         .filter_map(|field| {
             if has_attribute_by(field) {
@@ -77,7 +77,7 @@ pub fn generate_crud_by_field(fields: &Vec<&Field>, table_name:&str, update_fiel
                 
                 let code = quote!{
                     pub async fn #fn_get(pool: &#pool, value:#field_type) ->sqlx::Result<Self>{
-                        let sql = format!("SELECT * FROM {} WHERE {} = {}", #table_name, #field_name, #placeholder);
+                        let sql = format!("SELECT {} FROM {} WHERE {} = {}",#columns_all, #table_name, #field_name, #placeholder);
                         sqlx::query_as::<_, Self>(&sql)
                         .bind(value)
                         .fetch_one(pool).await
@@ -85,7 +85,7 @@ pub fn generate_crud_by_field(fields: &Vec<&Field>, table_name:&str, update_fiel
                     }
                     // #[doc = #doc]
                     pub async fn #fn_query(pool: &#pool, value:#field_type) ->sqlx::Result<Vec<Self>>{
-                        let sql = format!("SELECT * FROM {} WHERE {} = {}", #table_name, #field_name, #placeholder);
+                        let sql = format!("SELECT {} FROM {} WHERE {} = {}",#columns_all, #table_name, #field_name, #placeholder);
                         sqlx::query_as::<_, Self>(&sql)
                         .bind(value)
                         .fetch_all(pool).await

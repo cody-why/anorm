@@ -1,6 +1,6 @@
 [package]
 name = "anorm"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["plucky"]
 description = "Implement Create, Read, Update, and Delete (CRUD) methods base on sqlx."
@@ -20,7 +20,7 @@ repository = "https://github.com/cody-why/anorm"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anorm-macros = {version ="0.1.1", optional = true}
+anorm-macros = {version ="0.1.2", optional = true}
 
 # replace latest version with your local version
 [patch.crates-io]

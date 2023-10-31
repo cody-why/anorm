@@ -64,12 +64,20 @@ async fn test_query() {
         
     let u = User::get(&pool, 1).await;
     println!("get {:?}", u);
-    let u = User::get_by(&pool, "where id=1").await;
+    let u = User::get_by(&pool, "where id=?", sql_args!(1)).await;
     println!("get_by {:?}", u);
     let u = User::query_by_name(&pool, "plucky".into()).await;
     println!("query_by_name {:?}", u);
     let u =User::query(&pool).await;
     println!("list {:?}",u);
+
+    // u.update(&pool).await;
+    // u.insert(&pool).await;
+    // u.delete(&pool).await
+
+    // let list = vec![User::new(0, "lusy3", "123456"),User::new(0, "lusy5", "123456")];
+    // let r =User::insert_all(&pool, list).await;
+    // println!("list: {:?}",r);
     
 }
 

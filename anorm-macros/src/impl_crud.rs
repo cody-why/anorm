@@ -1,7 +1,7 @@
 /*
  * @Author: plucky
  * @Date: 2022-10-22 18:08:45
- * @LastEditTime: 2023-10-29 15:59:23
+ * @LastEditTime: 2023-10-31 18:12:57
  * @Description: 
  */
 
@@ -28,13 +28,13 @@ pub fn generate_crud(input: DeriveInput) -> TokenStream {
     };
     // let fields_all = fields.iter().collect::<Vec<_>>();
 
-    // filter ignore fields
+    // filter skip ignore fields
     let fields = fields1.iter().filter(|f| !is_skip(f)).collect::<Vec<_>>();
 
     // insert skip seq field
     let fields_insert = fields.iter().filter(|f| !is_seq(f)).collect::<Vec<_>>();
    
-    let field_name_insert = fields_insert.iter().filter(|f| !is_seq(f)).map(|field| {
+    let field_name_insert = fields_insert.iter().map(|field| {
         &field.ident
     }).collect::<Vec<_>>();
 
@@ -49,14 +49,16 @@ pub fn generate_crud(input: DeriveInput) -> TokenStream {
     //     #(#column_name),*
     // };
 
+    let columns_all = fields.iter().map(|field| {
+        get_field_name(field)
+    }).collect::<Vec<_>>().join(",");
     
     // upsert use all fields except ignore
     // let field_name_all = fields.iter().map(|field| {
     //     &field.ident
     // }).collect::<Vec<_>>();
-    // let columns_all = fields.iter().map(|field| {
-    //     get_field_name(field)
-    // }).collect::<Vec<_>>().join(",");
+    // with id field
+   
     // let values_all = question_marks(fields.len());
 
     // find `orm_pk` or default the first field as the "id" column
@@ -81,10 +83,11 @@ pub fn generate_crud(input: DeriveInput) -> TokenStream {
     let (pool, query_result) = db_pool_token();
     let placeholder = db_placeholder(1);
     let placeholder_u = db_placeholder(len+1);
+    let db_arguments = db_arguments_token();
 
     // by field
     let update_token = generate_update_field(&fields, &table_name, id_column);
-    let curd_by_field = generate_crud_by_field(&fields, &table_name,&update_fields_str,len);
+    let curd_by_field = generate_crud_by_field(&fields, &table_name,&update_fields_str,&columns_all,len);
 
     TokenStream::from(quote! {
         impl #struct_name {
@@ -92,36 +95,49 @@ pub fn generate_crud(input: DeriveInput) -> TokenStream {
             #update_token
             
             /// get by id
+            /// 
+            /// Example:
+            /// ```` no_run
+            /// User::get(&pool, 1).await
+            /// ````
             pub async fn get(pool: &#pool, id: #id_ty) -> sqlx::Result<Self> {
-                let sql = format!("SELECT * FROM {} WHERE {} = {}", #table_name, #id_name, #placeholder);
+                let sql = format!("SELECT {} FROM {} WHERE {} = {}",#columns_all, #table_name, #id_name, #placeholder);
                 sqlx::query_as::<_, Self>(&sql)
                 .bind(id)
                 .fetch_one(pool).await
             }
 
             /// get by where sql
-            pub async fn get_by(pool: &#pool, where_sql: impl AsRef<str>) -> sqlx::Result<Self> {
-                let sql = format!("SELECT * FROM {} {}", #table_name, where_sql.as_ref());
-                // if !where_sql.is_empty(){
-                //     sql = format!("{} WHERE {}", sql, where_sql);
-                // }
-                sqlx::query_as::<_, Self>(&sql)
+            /// Example:
+            /// ```` no_run
+            /// User::get_by(&pool, "where id=?", sql_args!(1)).await
+            /// ````
+            pub async fn get_by(pool: &#pool, where_sql: impl AsRef<str>, args: #db_arguments) -> sqlx::Result<Self> {
+                let sql = format!("SELECT {} FROM {} {}",#columns_all, #table_name, where_sql.as_ref());
+                // sqlx::query_as::<_, Self>(&sql)
+                sqlx::query_as_with::<_,Self,_>(&sql, args)
                 .fetch_one(pool).await
             }
 
             /// query
             pub async fn query(pool: &#pool) -> sqlx::Result<Vec<Self>> {
-                let sql = format!("SELECT * FROM {}", #table_name);
+                let sql = format!("SELECT {} FROM {}",#columns_all, #table_name);
                 
                 sqlx::query_as::<_, Self>(&sql)
                 .fetch_all(pool).await
             }
 
             /// query by where sql
-            pub async fn query_by(pool: &#pool, where_sql: impl AsRef<str>) -> sqlx::Result<Vec<Self>> {
-                let sql = format!("SELECT * FROM {} {}", #table_name, where_sql.as_ref());
+            /// 
+            /// Example:
+            /// ```` no_run
+            /// User::query_by(&pool, "where id=?", sql_args!(1)).await
+            /// ````
+            pub async fn query_by(pool: &#pool, where_sql: impl AsRef<str>, args: #db_arguments) -> sqlx::Result<Vec<Self>> {
+                let sql = format!("SELECT {} FROM {} {}",#columns_all, #table_name, where_sql.as_ref());
                 
-                sqlx::query_as::<_, Self>(&sql)
+                // sqlx::query_as::<_, Self>(&sql)
+                sqlx::query_as_with::<_,Self,_>(&sql, args)
                 .fetch_all(pool).await
             }
 
@@ -155,10 +171,15 @@ pub fn generate_crud(input: DeriveInput) -> TokenStream {
             }
 
             /// delete by where sql
-            pub async fn delete_by(pool: &#pool, where_sql: impl AsRef<str>) -> sqlx::Result<#query_result> {
+            /// 
+            /// Example:
+            /// ```` no_run
+            /// User::delete_by(&pool, "where id=?", sql_args!(1)).await
+            /// ````
+            pub async fn delete_by(pool: &#pool, where_sql: impl AsRef<str>, args: #db_arguments) -> sqlx::Result<#query_result> {
                 let sql = format!("DELETE FROM {} {}", #table_name, where_sql.as_ref());
                
-                sqlx::query(&sql)
+                sqlx::query_with(&sql,args)
                 .execute(pool).await
             }
 
@@ -174,9 +195,14 @@ pub fn generate_crud(input: DeriveInput) -> TokenStream {
             }
 
             /// update by where sql
-            pub async fn update_by(&self, pool: &#pool, where_sql: &str) -> sqlx::Result<#query_result> {
-                let sql = format!("UPDATE {} SET {} {}", #table_name, #update_fields_str, where_sql);
-                
+            /// 
+            /// Example:
+            /// ```` no_run
+            /// User::update_by(&pool, "where id=1").await
+            /// ````
+            pub async fn update_by(&self, pool: &#pool, where_sql: impl AsRef<str>) -> sqlx::Result<#query_result> {
+                let sql = format!("UPDATE {} SET {} {}", #table_name, #update_fields_str, where_sql.as_ref());
+                // todo!
                 sqlx::query(&sql)
                 #(
                      .bind(&self.#update_fields) 
@@ -205,11 +231,3 @@ pub fn generate_crud(input: DeriveInput) -> TokenStream {
     })
 }
 
-// make string "?, ?, ?" or "$1, $2, $3"
-fn question_marks(max: usize) -> String {
-    let itr = 1..max + 1;
-    itr.into_iter()
-        .map(|i| db_placeholder(i))
-        .collect::<Vec<String>>()
-        .join(",")
-}
