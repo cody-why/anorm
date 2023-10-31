@@ -1,7 +1,7 @@
 /*
  * @Author: plucky
  * @Date: 2022-10-21 17:23:16
- * @LastEditTime: 2023-10-31 18:17:01
+ * @LastEditTime: 2023-10-31 18:28:16
  * @Description: 
  */
 fn main() {
@@ -85,7 +85,7 @@ mod tests{
     async fn test_insert() {
         let pool=get_pool().await.unwrap();
         let _u = User::new(0, "lusy", "123456");
-        let r =_u.insert(&pool).await.unwrap();
+        let r =_u.insert(&pool).await;
         println!("list: {:?}",r);
     }
 
@@ -94,11 +94,11 @@ mod tests{
         let pool=get_pool().await.unwrap();
         
         let _u = User::new(10, "lusy", "123456");
-        let r = _u.delete(&pool).await.unwrap();
+        let r = _u.delete(&pool).await;
         println!("delete: {:?}",r);
-        let r =User::delete_by(&pool, "where name=?", sql_args!("leo")).await.unwrap();
+        let r =User::delete_by(&pool, "where name=?", sql_args!("leo")).await;
         println!("delete: {:?}",r);
-        let r =User::delete_by_name(&pool, "lusy".into()).await.unwrap();
+        let r =User::delete_by_name(&pool, "lusy".into()).await;
         println!("delete: {:?}",r);
     }
 
