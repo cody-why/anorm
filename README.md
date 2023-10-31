@@ -20,7 +20,7 @@
 </div>
 
 ## Use
- adding the following to your project's Cargo.toml:
+ add the following to your project's Cargo.toml:
  ```toml
 [dependencies]
 anorm = { virsion = "0.1", features = ["mysql"] }
@@ -82,44 +82,52 @@ async fn test_query() {
 }
 
 ```
-### #[derive(Crud)]
-```
-`#[derive(FromRow)]`
+
+## `#[derive(Crud)]`
+
 generate method: get, get_by, query, query_by, update, delete, insert, insert_all.
 
-attributes:
+### attributes:
 
 `#[anorm(id)]`
+
 default first field is primary key or set.
 
 `#[anorm(seq)]`
+
 sequence field, auto increment. insert will skip this field.
 
 `#[anorm(rename="name")]`
+
 rename table name or field name. 
 default table name by struct name to_table_case: UserDetail => user_detail. 
 default field name by field name to_snake_case: UserDetail => user_detail. 
 
 `#[anorm(skip)]`
+
 ignore field.
 
 `#[anorm(update)]`
+
 generate method update_xxx. 
 
 `#[anorm(by)]`
+
 generate qet_by_field, query_by_field, update_by_field, delete_by_field.
-```
-### #[derive(FromRow)]
-```
-`#[derive(FromRow)]`
+
+
+
+## `#[derive(FromRow)]`
+
 impl sqlx::FromRow trait.
 
 or use `#[derive(sqlx::FromRow)]` macro or impl `sqlx::FromRow` trait.
 
 if using sqlx::FromRow, if have `#[anorm(skip)]` add `#[sqlx(skip)]` .
 
-```
-### macro_export
+
+## macro_export
+
 
 `sql_args`
 ``` rust
