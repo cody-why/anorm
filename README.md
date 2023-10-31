@@ -119,5 +119,20 @@ or use `#[derive(sqlx::FromRow)]` macro or impl `sqlx::FromRow` trait.
 if using sqlx::FromRow, if have `#[anorm(skip)]` add `#[sqlx(skip)]` .
 
 ```
+### macro_export
 
+`sql_args`
+``` rust
+ let args = sql_args!(&name, age);
+```
+
+`query`
+```rust
+query!("insert into users (name, password) values (?,?)", name, password).execute(&pool).await
+```
+ 
+`query_as`
+```rust
+query_as!(User, "select * from users where name = ?", name).fetch_one(&pool).await
+```
 
