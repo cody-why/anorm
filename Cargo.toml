@@ -4,7 +4,7 @@ version = "0.1.2"
 edition = "2021"
 authors = ["plucky"]
 description = "Implement Create, Read, Update, and Delete (CRUD) methods base on sqlx."
-#documentation = "https://docs.rs/co_orm/"
+#
 readme = "readme.md"
 keywords = [
     "orm",
@@ -15,7 +15,7 @@ keywords = [
 categories = ["database"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/cody-why/anorm"
-
+documentation = "https://docs.rs/crate/anorm/latest"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
